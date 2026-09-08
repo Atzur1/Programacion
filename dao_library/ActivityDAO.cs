@@ -1,37 +1,59 @@
 namespace dao_library;
 
+using dao_library.entity_framework;
 using entity_library;
 
 public class ActivityDAO
 {
-    private static long _autoIncrementId = 3;
+    private readonly AppDbContext _context;
+
+    public ActivityDAO(AppDbContext context)
+    {
+        _context = context;
+    }
 
     public Activity Create(Activity activity)
     {
-        activity.Id = _autoIncrementId++;
-        MockDatabase.Activities.Add(activity);
+        _context.Activities.Add(activity);
+        _context.SaveChanges();
         return activity;
     }
 
-    public Activity? ReadById(long id) => MockDatabase.Activities.FirstOrDefault(a => a.Id == id);
+    public Activity? ReadById(long id)
+    {
+        return _context.Activities.FirstOrDefault(a => a.Id == id);
+    }
 
     public bool Update(Activity activity)
     {
-        var existing = ReadById(activity.Id);
-        if (existing == null) return false;
+        var existing = _context.Activities.FirstOrDefault(a => a.Id == activity.Id);
+        if (existing == null)
+        {
+            return false;
+        }
 
         existing.Title = activity.Title;
         existing.Description = activity.Description;
-        existing.Date = activity.Date;
-        existing.TypeActivity = activity.TypeActivity;
+
+        _context.SaveChanges();
         return true;
     }
 
     public bool DeleteById(long id)
     {
-        var activity = ReadById(id);
-        return activity != null && MockDatabase.Activities.Remove(activity);
+        var activity = _context.Activities.FirstOrDefault(a => a.Id == id);
+        if (activity == null)
+        {
+            return false;
+        }
+
+        _context.Activities.Remove(activity);
+        _context.SaveChanges();
+        return true;
     }
 
-    public List<Activity> GetAll() => MockDatabase.Activities;
+    public List<Activity> GetAll()
+    {
+        return _context.Activities.ToList();
+    }
 }

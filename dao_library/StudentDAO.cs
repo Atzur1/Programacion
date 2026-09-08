@@ -1,27 +1,32 @@
 ﻿namespace dao_library;
 
+using dao_library.entity_framework;
 using entity_library;
 
 public class StudentDAO
 {
-    private static readonly List<Student> _students = new List<Student>();
-    private static long _autoIncrementId = 1;
+    private readonly AppDbContext _context;
+
+    public StudentDAO(AppDbContext context)
+    {
+        _context = context;
+    }
 
     public Student CreateStudent(Student student)
     {
-        student.Id = _autoIncrementId++;
-        _students.Add(student);
+        _context.Students.Add(student);
+        _context.SaveChanges();
         return student;
     }
 
     public Student? ReadStudentById(long id)
     {
-        return _students.FirstOrDefault(s => s.Id == id);
+        return _context.Students.FirstOrDefault(s => s.Id == id);
     }
 
     public bool UpdateStudent(Student student)
     {
-        var existing = ReadStudentById(student.Id);
+        var existing = _context.Students.FirstOrDefault(s => s.Id == student.Id);
         if (existing == null)
         {
             return false;
@@ -29,22 +34,26 @@ public class StudentDAO
 
         existing.Name = student.Name;
         existing.Dni = student.Dni;
+
+        _context.SaveChanges();
         return true;
     }
 
     public bool DeleteStudentById(long id)
     {
-        var student = ReadStudentById(id);
+        var student = _context.Students.FirstOrDefault(s => s.Id == id);
         if (student == null)
         {
             return false;
         }
 
-        return _students.Remove(student);
+        _context.Students.Remove(student);
+        _context.SaveChanges();
+        return true;
     }
 
     public List<Student> GetAllStudents()
     {
-        return _students;
+        return _context.Students.ToList();
     }
 }
