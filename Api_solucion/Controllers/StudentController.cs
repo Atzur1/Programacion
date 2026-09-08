@@ -32,12 +32,18 @@ public class StudentController : ControllerBase
         return Ok(student);
     }
 
-    [HttpPost]
+[HttpPost]
     public ActionResult<Student> Create([FromBody] Student student)
+{
+    var existingStudent = _studentDAO.ReadByDni(student.Dni);
+    if (existingStudent != null)
     {
-        var created = _studentDAO.CreateStudent(student);
-        return Created($"api/student/{created.Id}", created);
+        return BadRequest("Ya existe un estudiante registrado con ese DNI.");
     }
+
+    var created = _studentDAO.CreateStudent(student);
+    return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
+}
 
     [HttpPut("{id}")]
     public IActionResult Update(long id, [FromBody] Student student)

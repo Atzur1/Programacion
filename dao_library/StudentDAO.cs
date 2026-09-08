@@ -24,6 +24,12 @@ public class StudentDAO
         return _context.Students.FirstOrDefault(s => s.Id == id);
     }
 
+    // Método para validar duplicados por DNI
+    public Student? ReadByDni(string dni)
+    {
+        return _context.Students.FirstOrDefault(s => s.Dni == dni);
+    }
+
     public bool UpdateStudent(Student student)
     {
         var existing = _context.Students.FirstOrDefault(s => s.Id == student.Id);
